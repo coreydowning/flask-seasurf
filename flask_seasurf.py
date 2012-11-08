@@ -240,7 +240,8 @@ class SeaSurf(object):
 
         response.set_cookie(self._csrf_name,
                             getattr(g, self._csrf_name),
-                            max_age=self._csrf_timeout)
+                            max_age=self._csrf_timeout,
+                            secure=request.is_secure)
         response.vary.add('Cookie')
         return response
 
