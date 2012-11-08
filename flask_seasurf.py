@@ -130,7 +130,6 @@ class SeaSurf(object):
                                             timedelta(days=5))
         self._type = app.config.get('SEASURF_INCLUDE_OR_EXEMPT_VIEWS',
                                     'exempt')
-        setattr(g, self._csrf_name, self._generate_token())
 
     def exempt(self, view):
         '''A decorator that can be used to exclude a view from CSRF validation.
@@ -239,9 +238,6 @@ class SeaSurf(object):
         if getattr(g, self._csrf_name) is None:
             return response
 
-        if not getattr(g, '_csrf_used', False):
-            return response
-
         response.set_cookie(self._csrf_name,
                             getattr(g, self._csrf_name),
                             max_age=self._csrf_timeout)
@@ -249,9 +245,7 @@ class SeaSurf(object):
         return response
 
     def _get_token(self):
-        '''Attempts to get a token from the request cookies and sets
-        `_csrf_used` to True.'''
-        g._csrf_used = True
+        '''Attempts to get a token from the request cookies.'''
         return getattr(g, self._csrf_name, None)
 
     def _generate_token(self):
