@@ -130,6 +130,7 @@ class SeaSurf(object):
                                             timedelta(days=5))
         self._type = app.config.get('SEASURF_INCLUDE_OR_EXEMPT_VIEWS',
                                     'exempt')
+        setattr(g, self._csrf_name, self._generate_token())
 
     def exempt(self, view):
         '''A decorator that can be used to exclude a view from CSRF validation.
@@ -234,6 +235,9 @@ class SeaSurf(object):
         the response with a cookie containing the token. If not then we just
         return the response unaltered. Bound to the Flask `after_request`
         decorator.'''
+
+        if getattr(g, self._csrf_name) is None:
+            return response
 
         if not getattr(g, '_csrf_used', False):
             return response
