@@ -238,6 +238,8 @@ class SeaSurf(object):
         if getattr(g, self._csrf_name) is None:
             return response
 
+        self.app.logger.info('SeaSurf After Request: secure? %s' %
+                             request.is_secure)
         response.set_cookie(self._csrf_name,
                             getattr(g, self._csrf_name),
                             max_age=self._csrf_timeout,
