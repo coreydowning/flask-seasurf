@@ -186,6 +186,10 @@ class SeaSurf(object):
         if self._csrf_disable:
             return  # don't validate for testing
 
+        csrf_secure = getattr(g, self._csrf_secure, None)
+        if csrf_secure is None:
+            setattr(g, self._csrf_secure, request.is_secure)
+
         csrf_token = request.cookies.get(self._csrf_name, None)
         if not csrf_token:
             setattr(g, self._csrf_name, self._generate_token())
@@ -220,6 +224,9 @@ class SeaSurf(object):
                     error = (error, request.path)
                     self.app.logger.warning('Forbidden (%s): %s' % error)
                     return abort(403)
+            else:
+                self.app.logger.debug('Request is NOT Secure')
+                setattr(g, self._csrf_secure, False)
 
             request_csrf_token = request.form.get(self._csrf_name, '')
             if request_csrf_token == '':
