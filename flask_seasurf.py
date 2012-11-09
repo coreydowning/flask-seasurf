@@ -124,6 +124,7 @@ class SeaSurf(object):
 
         self._secret_key = app.config.get('SECRET_KEY', '')
         self._csrf_name = app.config.get('CSRF_COOKIE_NAME', '_csrf_token')
+        self._csrf_secure = app.config.get('CSRF_SECURE_NAME', '_csrf_secure')
         self._csrf_disable = app.config.get('CSRF_DISABLE',
                                             app.config.get('TESTING', False))
         self._csrf_timeout = app.config.get('CSRF_COOKIE_TIMEOUT',
@@ -205,6 +206,8 @@ class SeaSurf(object):
                 raise NotImplementedError
 
             if request.is_secure:
+                self.app.logger.debug('Request Is Secure')
+                setattr(g, self._csrf_secure, True)
                 referer = request.headers.get('Referer')
                 if referer is None:
                     error = (REASON_NO_REFERER, request.path)
@@ -238,12 +241,10 @@ class SeaSurf(object):
         if getattr(g, self._csrf_name) is None:
             return response
 
-        self.app.logger.warning('SeaSurf After Request: secure? %s' %
-                             request.is_secure)
         response.set_cookie(self._csrf_name,
                             getattr(g, self._csrf_name),
                             max_age=self._csrf_timeout,
-                            secure=request.is_secure)
+                            secure=getattr(g, self._csrf_secure))
         response.vary.add('Cookie')
         return response
 
